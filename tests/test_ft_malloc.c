@@ -1,4 +1,4 @@
-#include "malloc.h"
+#include "ft_malloc.h"
 
 #include <errno.h>
 #include <stddef.h>
@@ -51,4 +51,4 @@ do_test(void)
 }
 
 #define TEST_FUNCTION do_test()
-#include "test-skeleton.c"
+#include "test_skeleton.c"

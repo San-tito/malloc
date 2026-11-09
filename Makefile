@@ -16,14 +16,14 @@ endif
 NAME     := libft_malloc_$(HOSTTYPE).so
 LINK     := libft_malloc.so
 
-headers  := $(incdir)/malloc.h
+headers  := $(incdir)/ft_malloc.h
 
-routines := malloc
+routines := ft_malloc
 objs     := $(routines:%=$(builddir)/%.o)
 
 libft    := $(libftdir)/libft.a
 
-tests     := test-malloc
+tests     := test_ft_malloc
 test-bins := $(tests:%=$(builddir)/%)
 test-outs := $(tests:%=$(builddir)/%.out)
 
@@ -46,7 +46,7 @@ $(objs): $(builddir)/%.o: $(srcdir)/%.c $(headers) | $(builddir)
 $(builddir):
 	mkdir -p $(builddir)
 
-$(builddir)/test-%: $(testdir)/test-%.c $(testdir)/test-skeleton.c $(LINK) | $(builddir)
+$(builddir)/test_%: $(testdir)/test_%.c $(testdir)/test_skeleton.c $(LINK) | $(builddir)
 	$(CC) -Wall -Wextra -Werror -I$(incdir) -I$(testdir) $< -L. -lft_malloc -o $@
 
 tests: $(NAME) $(LINK) $(test-bins)
