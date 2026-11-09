@@ -5,22 +5,22 @@
 #include <stddef.h>
 #include <errno.h>
 
-#define NBINS                  128
-#define BINMAPSIZE             (NBINS / (sizeof(unsigned int) * 8))
-#define NFASTBINS              10
-
 #define MALLOC_ALIGN_MASK      (2 * sizeof(size_t) - 1)
 #define MINSIZE                (4 * sizeof(size_t))
-
-#define DEFAULT_MMAP_THRESHOLD (128 * 1024)
-#define MMAP_AS_MORECORE_SIZE  (1024 * 1024)
 
 #define PREV_INUSE             0x1
 #define IS_MMAPPED             0x2
 #define SIZE_BITS              (PREV_INUSE | IS_MMAPPED)
 
+#define TINY_MAX               128
+#define TINY_ZONE_SIZE         (16 * 1024)
+
+#define SMALL_MAX              1024
+#define SMALL_ZONE_SIZE        (128 * 1024)
+
 typedef struct malloc_chunk mchunk;
 typedef struct malloc_state mstate;
+typedef struct zone         zone_t;
 
 struct malloc_chunk
 {
@@ -32,23 +32,33 @@ struct malloc_chunk
     mchunk *bk_nextsize;
 };
 
+struct zone
+{
+    zone_t *next;
+    size_t  total_size;
+    mchunk *top;
+};
+
 struct malloc_state
 {
     pthread_mutex_t mutex;
-    int flags;
-    int have_fastchunks;
-    mchunk *fastbins[NFASTBINS];
-    mchunk *top;
-    mchunk *last_remainder;
-    mchunk *bins[NBINS * 2 - 2];
-    unsigned int binmap[BINMAPSIZE];
-    mstate *next;
-    mstate *next_free;
-    size_t attached_threads;
-    size_t system_mem;
-    size_t max_system_mem;
+    zone_t *tiny_zones;
+    zone_t *small_zones;
+    mchunk *large_chunks;
 };
 
 void *ft_malloc(size_t bytes);
+void  show_alloc_mem(void);
+
+void *tiny_malloc(zone_t **zone_list, size_t nb);
+void  print_tiny_region(zone_t *list, size_t *total);
+
+void *small_malloc(zone_t **zone_list, size_t nb);
+void  print_small_region(zone_t *list, size_t *total);
+
+void *large_malloc(mstate *av, size_t nb);
+void  large_debug_print(mchunk *list, size_t *total);
+
+void  print_hexdump(const void *addr, size_t size);
 
 #endif /* !MALLOC_H */

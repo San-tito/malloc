@@ -1,7 +1,6 @@
 #include "malloc.h"
 #include "arena.h"
-#include <sys/mman.h>
-#include <unistd.h>
+#include <stdio.h>
 
 static size_t
 request2size(size_t req)
@@ -12,69 +11,9 @@ request2size(size_t req)
 }
 
 static void *
-sysmalloc(size_t nb, mstate *av)
-{
-    mchunk *p;
-    size_t size;
-    size_t pagesize = 4096;
-
-    if (nb >= DEFAULT_MMAP_THRESHOLD)
-    {
-        size = (nb + sizeof(size_t) + pagesize - 1) & ~(pagesize - 1);
-        char *mm = (char *)mmap(NULL, size, PROT_READ | PROT_WRITE,
-                                MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-        if (mm != MAP_FAILED)
-        {
-            p = (mchunk *)mm;
-            p->prev_size = 0;
-            p->size = size | IS_MMAPPED;
-            return ((void *)((char *)p + 2 * sizeof(size_t)));
-        }
-    }
-
-    size = MMAP_AS_MORECORE_SIZE;
-    if (size < nb + MINSIZE)
-        size = (nb + MINSIZE + pagesize - 1) & ~(pagesize - 1);
-
-    char *mbrk = (char *)mmap(NULL, size, PROT_READ | PROT_WRITE,
-                              MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    if (mbrk == MAP_FAILED)
-    {
-        errno = ENOMEM;
-        return (NULL);
-    }
-
-    av->top = (mchunk *)mbrk;
-    av->top->prev_size = 0;
-    av->top->size = size | PREV_INUSE;
-    av->system_mem += size;
-
-    p = av->top;
-    size = p->size & ~SIZE_BITS;
-    if (size >= nb + MINSIZE)
-    {
-        size_t remainder_size = size - nb;
-        mchunk *remainder = (mchunk *)((char *)p + nb);
-
-        av->top = remainder;
-        p->size = nb | PREV_INUSE;
-        remainder->size = remainder_size | PREV_INUSE;
-
-        return ((void *)((char *)p + 2 * sizeof(size_t)));
-    }
-
-    errno = ENOMEM;
-    return (NULL);
-}
-
-static void *
-internal_malloc(mstate *av, size_t bytes)
+int_malloc(mstate *av, size_t bytes)
 {
     size_t nb;
-    mchunk *victim;
-    size_t size;
-    mchunk *remainder;
-    size_t remainder_size;
 
     nb = request2size(bytes);
     if (nb < bytes || nb >= (size_t)(-2 * MINSIZE))
@@ -83,24 +22,11 @@ internal_malloc(mstate *av, size_t bytes)
         return (NULL);
     }
 
-    victim = av->top;
-    if (victim != NULL)
-    {
-        size = victim->size & ~SIZE_BITS;
-        if (size >= nb + MINSIZE)
-        {
-            remainder_size = size - nb;
-            remainder = (mchunk *)((char *)victim + nb);
-
-            av->top = remainder;
-            victim->size = nb | PREV_INUSE;
-            remainder->size = remainder_size | PREV_INUSE;
-
-            return ((void *)((char *)victim + 2 * sizeof(size_t)));
-        }
-    }
-
-    return (sysmalloc(nb, av));
+    if (bytes <= TINY_MAX)
+        return (tiny_malloc(&av->tiny_zones, nb));
+    if (bytes <= SMALL_MAX)
+        return (small_malloc(&av->small_zones, nb));
+    return (large_malloc(av, nb));
 }
 
 void *
@@ -110,10 +36,52 @@ ft_malloc(size_t bytes)
     void   *victim = NULL;
 
     ar_ptr = arena_get();
-    victim = internal_malloc(ar_ptr, bytes);
+    victim = int_malloc(ar_ptr, bytes);
 
     if (ar_ptr != NULL)
         pthread_mutex_unlock(&ar_ptr->mutex);
 
     return (victim);
+}
+
+void
+print_hexdump(const void *addr, size_t size)
+{
+    const unsigned char *p = (const unsigned char *)addr;
+    size_t i, j;
+
+    for (i = 0; i < size; i += 16)
+    {
+        printf("  %p: ", (const void *)(p + i));
+        for (j = 0; j < 16; j++)
+        {
+            if (i + j < size)
+                printf("%02x ", p[i + j]);
+            else
+                printf("   ");
+            if (j == 7)
+                printf(" ");
+        }
+        printf(" |");
+        for (j = 0; j < 16 && (i + j) < size; j++)
+        {
+            unsigned char c = p[i + j];
+            printf("%c", (c >= 32 && c <= 126) ? c : '.');
+        }
+        printf("|\n");
+    }
+}
+
+void
+show_alloc_mem(void)
+{
+    mstate *av = arena_get();
+    size_t  total = 0;
+
+    print_tiny_region(av->tiny_zones, &total);
+    print_small_region(av->small_zones, &total);
+    large_debug_print(av->large_chunks, &total);
+
+    printf("Total : %zu bytes\n", total);
+    pthread_mutex_unlock(&av->mutex);
 }

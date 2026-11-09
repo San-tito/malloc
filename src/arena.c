@@ -3,8 +3,9 @@
 
 static mstate arena = {
     .mutex = PTHREAD_MUTEX_INITIALIZER,
-    .next = &arena,
-    .attached_threads = 1
+    .tiny_zones = NULL,
+    .small_zones = NULL,
+    .large_chunks = NULL
 };
 
 mstate *

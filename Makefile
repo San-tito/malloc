@@ -18,7 +18,7 @@ LINK     := libft_malloc.so
 
 headers  := $(incdir)/malloc.h $(incdir)/arena.h
 
-routines := malloc arena
+routines := malloc arena tiny small large
 objs     := $(routines:%=$(builddir)/%.o)
 
 libft    := $(libftdir)/libft.a
