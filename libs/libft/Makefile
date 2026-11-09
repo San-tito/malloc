@@ -2,7 +2,7 @@ srcdir   := src
 builddir := build
 incdir   := include
 
-CC       := gcc
+CC       := cc
 CFLAGS   := -Wall -Wextra -Werror -I$(incdir)
 AR       := ar
 ARFLAGS  := rcs
@@ -11,9 +11,8 @@ NAME     := libft.a
 
 headers  := $(incdir)/libft.h
 
-srcs     := $(srcdir)/ft_memset.c
-
-objs     := $(srcs:$(srcdir)/%.c=$(builddir)/%.o)
+routines := ft_memset
+objs     := $(routines:%=$(builddir)/%.o)
 
 .PHONY: all clean fclean re
 

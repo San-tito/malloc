@@ -1,13 +1,8 @@
-#ifndef	_MALLOC_H_
-#define	_MALLOC_H_
+#ifndef MALLOC_H
+#define MALLOC_H
 
 #include <stddef.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
 
-#undef malloc
+void *ft_malloc(size_t size_bytes);
 
-void *ft_malloc (size_t bytes);
-
-#endif /* !_MALLOC_H_ */
+#endif /* !MALLOC_H */

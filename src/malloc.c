@@ -1,7 +1,11 @@
 #include "malloc.h"
 
-void *ft_malloc (size_t bytes)
+#include <stddef.h>
+
+/* Stub: allocation is not implemented yet. */
+void *
+ft_malloc(size_t size_bytes)
 {
-    (void)bytes;
-    return 0;
+    (void)size_bytes;
+    return (NULL);
 }

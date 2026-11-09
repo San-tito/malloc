@@ -1,26 +1,32 @@
 #include "malloc.h"
 
+#include <errno.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 static int errors = 0;
 
-static void merror(const char *msg)
+static void
+merror(const char *msg)
 {
     ++errors;
     printf("Error: %s\n", msg);
 }
 
-static int do_test(void)
+static int
+do_test(void)
 {
-    void *p, *q;
-    int save;
+    void *p;
+    void *q;
+    int errno_saved;
 
     errno = 0;
-
     p = ft_malloc((size_t)-1);
-    save = errno;
-
+    errno_saved = errno;
     if (p != NULL)
         merror("ft_malloc ((size_t)-1) succeeded.");
-    if (p == NULL && save != ENOMEM)
+    if (p == NULL && errno_saved != ENOMEM)
         merror("errno is not set to ENOMEM on overflow.");
 
     p = ft_malloc(10);
@@ -39,9 +45,9 @@ static int do_test(void)
     if (q != NULL)
         merror("ft_malloc (-512K) succeeded.");
 
-    free(p);
-
-    return errors != 0;
+    (void)p;
+    (void)q;
+    return (errors);
 }
 
 #define TEST_FUNCTION do_test()

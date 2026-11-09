@@ -1,0 +1,28 @@
+# GNU-inspired base, adapted to project Style (safety/clarity): 100 columns, 4 spaces.
+BasedOnStyle: GNU
+Language: C
+Standard: Latest
+
+ColumnLimit: 100
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
+
+BreakBeforeBraces: GNU
+AlwaysBreakAfterReturnType: AllDefinitions
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
+
+IndentCaseLabels: false
+SpaceBeforeParens: ControlStatements
+PointerAlignment: Right
+DerivePointerAlignment: false
+
+SortIncludes: false
+ReflowComments: true
+AlignEscapedNewlines: Left
+MaxEmptyLinesToKeep: 1
+KeepEmptyLinesAtTheStartOfBlocks: false
