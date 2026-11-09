@@ -42,6 +42,6 @@ struct malloc_state
     size_t max_system_mem;
 };
 
-void *ft_malloc(size_t size_bytes);
+void *ft_malloc(size_t bytes);
 
 #endif /* !FT_MALLOC_H */
