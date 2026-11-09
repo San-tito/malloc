@@ -11,7 +11,7 @@ NAME     := libft.a
 
 headers  := $(incdir)/libft.h
 
-routines := ft_memset
+routines := memset
 objs     := $(routines:%=$(builddir)/%.o)
 
 .PHONY: all clean fclean re

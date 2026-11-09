@@ -1,16 +1,23 @@
-#ifndef FT_MALLOC_H
-#define FT_MALLOC_H
+#ifndef MALLOC_H
+#define MALLOC_H
 
 #include <pthread.h>
 #include <stddef.h>
+#include <errno.h>
 
-#define NBINS 128
+#define NBINS                  128
+#define BINMAPSIZE             (NBINS / (sizeof(unsigned int) * 8))
+#define NFASTBINS              10
 
-#define BINMAPSIZE (NBINS / (sizeof(unsigned int) * 8))
+#define MALLOC_ALIGN_MASK      (2 * sizeof(size_t) - 1)
+#define MINSIZE                (4 * sizeof(size_t))
 
-#define MAX_FAST_SIZE (80 * sizeof(size_t) / 4)
+#define DEFAULT_MMAP_THRESHOLD (128 * 1024)
+#define MMAP_AS_MORECORE_SIZE  (1024 * 1024)
 
-#define NFASTBINS (MAX_FAST_SIZE / (2 * sizeof(size_t)))
+#define PREV_INUSE             0x1
+#define IS_MMAPPED             0x2
+#define SIZE_BITS              (PREV_INUSE | IS_MMAPPED)
 
 typedef struct malloc_chunk mchunk;
 typedef struct malloc_state mstate;
@@ -44,4 +51,4 @@ struct malloc_state
 
 void *ft_malloc(size_t bytes);
 
-#endif /* !FT_MALLOC_H */
+#endif /* !MALLOC_H */

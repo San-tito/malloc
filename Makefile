@@ -16,14 +16,14 @@ endif
 NAME     := libft_malloc_$(HOSTTYPE).so
 LINK     := libft_malloc.so
 
-headers  := $(incdir)/ft_malloc.h
+headers  := $(incdir)/malloc.h $(incdir)/arena.h
 
-routines := ft_malloc
+routines := malloc arena
 objs     := $(routines:%=$(builddir)/%.o)
 
 libft    := $(libftdir)/libft.a
 
-tests     := test_ft_malloc
+tests     := test_malloc
 test-bins := $(tests:%=$(builddir)/%)
 test-outs := $(tests:%=$(builddir)/%.out)
 
